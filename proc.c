@@ -228,6 +228,7 @@ fork(void)
 int
 clone(void(*fcn)(void *, void *), void *arg1, void *arg2, void *stack)
 {
+  // Check if stack is within process address space. test #4
   if ((uint)stack >= (uint)myproc()->sz)
     return -1;
   
@@ -252,26 +253,18 @@ clone(void(*fcn)(void *, void *), void *arg1, void *arg2, void *stack)
   np->ustack = (char *)stack;
 
   // set up return value and arguments in the thread stack
-  // uint *ptr = (uint *)stack;
-  // ptr = ptr + PGSIZE - 1; // stack grows up from page boundary
-  // //In x86, the function arguments are pushed onto the stack from left to right of function call
-  // //    the instruction address after fcn(the thread) completes goes above the argument.
-  // //    We write some fake return address 0xffffffff as we expect a thread to call exit() after it completes.
-  // *ptr = (uint)arg2;            // fcn's second argument
-  // ptr -= 1;
-  // *ptr = (uint)arg1;            // fcn's first argument
-  // ptr -= 1;
-  // *ptr = 0xffffffff;      // return value
-  // np->tf->esp = (uint)ptr;
-  int *myret, *myarg1, *myarg2;
-  myret = stack + 4096 - 3 * sizeof(int *);
-  *myret = 0xFFFFFFFF;
+  // In x86, the function arguments are pushed onto the stack from left to right of function call
+  //    the instruction address after fcn(the thread) completes goes above the argument.
+  //    We write some fake return address 0xffffffff as we expect a thread to call exit() after it completes.
+  int *retval, *firstarg, *secondarg;
+  retval = stack + PGSIZE - 3 * sizeof(int *);
+  *retval = 0xFFFFFFFF;
 
-  myarg1 = stack + 4096 - 2 * sizeof(int *);
-  *myarg1 = (int)arg1;
+  firstarg = stack + PGSIZE - 2 * sizeof(int *);
+  *firstarg = (int)arg1;
 
-  myarg2 = stack + 4096 - sizeof(int *);
-  *myarg2 = (int)arg2;
+  secondarg = stack + PGSIZE - sizeof(int *);
+  *secondarg = (int)arg2;
 
   np->tf->esp = (int)stack +  PGSIZE - 3 * sizeof(int *);
 
