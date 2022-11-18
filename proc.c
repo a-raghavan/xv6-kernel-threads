@@ -228,6 +228,13 @@ fork(void)
 int
 clone(void(*fcn)(void *, void *), void *arg1, void *arg2, void *stack)
 {
+  if ((uint)stack >= (uint)myproc()->sz)
+    return -1;
+  
+  uint boundary = (uint)(stack + PGSIZE);
+  if (boundary >= (uint)myproc()->sz)
+    return -1;
+
   int i, pid;
   struct proc *np;
   struct proc *curproc = myproc();
@@ -260,7 +267,7 @@ clone(void(*fcn)(void *, void *), void *arg1, void *arg2, void *stack)
   myret = stack + 4096 - 3 * sizeof(int *);
   *myret = 0xFFFFFFFF;
 
-  myarg1 = stack + 4096 - 2*sizeof(int *);
+  myarg1 = stack + 4096 - 2 * sizeof(int *);
   *myarg1 = (int)arg1;
 
   myarg2 = stack + 4096 - sizeof(int *);
@@ -426,7 +433,6 @@ join(void **stack)
         pid = p->pid;
         kfree(p->kstack);
         p->kstack = 0;
-        freevm(p->pgdir);
         p->pid = 0;
         p->parent = 0;
         p->name[0] = 0;

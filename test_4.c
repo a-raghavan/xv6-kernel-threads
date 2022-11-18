@@ -29,9 +29,9 @@ main(int argc, char *argv[])
      stack = p + 4;
    else
      stack = p;
-    printf(1, "DDDDD\n");
+
    assert(clone(worker, 0, 0, stack) == -1);
-  printf(1, "DDDDD\n");
+
    stack = sbrk(0);
    if((uint)stack % PGSIZE)
      stack = stack + (PGSIZE - (uint)stack % PGSIZE);
@@ -40,7 +40,7 @@ main(int argc, char *argv[])
    assert((uint)sbrk(0) - (uint)stack == PGSIZE/2);
 
    assert(clone(worker, 0, 0, stack) == -1);
-   printf(1, "DDDDD\n");
+   
    printf(1, "TEST PASSED\n");
    free(p);
    exit();

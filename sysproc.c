@@ -108,6 +108,7 @@ int sys_clone(void)
   
   if ((uint)stack % PGSIZE != 0)
     return -1;
+
   return clone(fcn, arg1, arg2, stack);
 }
 
