@@ -258,7 +258,7 @@ clone(void(*fcn)(void *, void *), void *arg1, void *arg2, void *stack)
   //    We write some fake return address 0xffffffff as we expect a thread to call exit() after it completes.
   int *retval, *firstarg, *secondarg;
   retval = stack + PGSIZE - 3 * sizeof(int *);
-  *retval = 0xFFFFFFFF;
+  *retval = 0xffffffff;
 
   firstarg = stack + PGSIZE - 2 * sizeof(int *);
   *firstarg = (int)arg1;
