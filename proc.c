@@ -19,11 +19,13 @@ extern void forkret(void);
 extern void trapret(void);
 
 static void wakeup1(void *chan);
+struct spinlock sbrkLock;
 
 void
 pinit(void)
 {
   initlock(&ptable.lock, "ptable");
+  initlock(&sbrkLock, "sbrk");
 }
 
 // Must be called with interrupts disabled
@@ -88,6 +90,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  p->threadgroupid = p->pid;
 
   release(&ptable.lock);
 
@@ -160,9 +163,9 @@ userinit(void)
 int
 growproc(int n)
 {
+  
   uint sz;
   struct proc *curproc = myproc();
-
   sz = curproc->sz;
   if(n > 0){
     if((sz = allocuvm(curproc->pgdir, sz, sz + n)) == 0)
@@ -171,7 +174,20 @@ growproc(int n)
     if((sz = deallocuvm(curproc->pgdir, sz, sz + n)) == 0)
       return -1;
   }
+
   curproc->sz = sz;
+
+  struct proc *p;
+  // change size of all child threads
+  
+  acquire(&ptable.lock);
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+    if (p->threadgroupid == curproc->threadgroupid)
+      p->sz = sz;
+  }
+
+  release(&ptable.lock);
+
   switchuvm(curproc);
   return 0;
 }
@@ -233,7 +249,7 @@ clone(void(*fcn)(void *, void *), void *arg1, void *arg2, void *stack)
     return -1;
   
   uint boundary = (uint)(stack + PGSIZE);
-  if (boundary >= (uint)myproc()->sz)
+  if (boundary > (uint)myproc()->sz)
     return -1;
 
   int i, pid;
@@ -244,13 +260,13 @@ clone(void(*fcn)(void *, void *), void *arg1, void *arg2, void *stack)
   if((np = allocproc()) == 0){
     return -1;
   }
-
   // thread's address space is same as parent process address space. test #1
   np->pgdir = curproc->pgdir;
   np->sz = curproc->sz;
   np->parent = curproc;
   *np->tf = *curproc->tf;
   np->ustack = (char *)stack;
+  np->threadgroupid = curproc->threadgroupid;
 
   // set up return value and arguments in the thread stack
   // In x86, the function arguments are pushed onto the stack from left to right of function call

@@ -22,8 +22,3 @@
 #define SYS_close  21
 #define SYS_clone  22
 #define SYS_join  23
-#define SYS_thread_create  24
-#define SYS_thread_join  25
-#define SYS_lock_init  26
-#define SYS_lock_acquire  27
-#define SYS_lock_release  28

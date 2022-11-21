@@ -120,6 +120,8 @@ void            userinit(void);
 int             wait(void);
 void            wakeup(void*);
 void            yield(void);
+extern struct spinlock sbrkLock;
+
 
 // swtch.S
 void            swtch(struct context**, struct context*);
@@ -132,6 +134,7 @@ void            initlock(struct spinlock*, char*);
 void            release(struct spinlock*);
 void            pushcli(void);
 void            popcli(void);
+
 
 // sleeplock.c
 void            acquiresleep(struct sleeplock*);

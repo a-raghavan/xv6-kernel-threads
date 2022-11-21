@@ -25,11 +25,7 @@ int sleep(int);
 int uptime(void);
 int clone(void(*fcn)(void *, void *), void *arg1, void *arg2, void *stack);
 int join(void **stack);
-int thread_create(void (*start_routine)(void *, void *), void *arg1, void *arg2);
-int thread_join();
-void lock_init(lock_t *);
-void lock_acquire(lock_t *);
-void lock_release(lock_t *);
+
 
 
 // ulib.c
@@ -45,3 +41,8 @@ void* memset(void*, int, uint);
 void* malloc(uint);
 void free(void*);
 int atoi(const char*);
+int thread_create(void (*start_routine)(void *, void *), void *arg1, void *arg2);
+int thread_join();
+void lock_init(lock_t *);
+void lock_acquire(lock_t *);
+void lock_release(lock_t *);

@@ -6,6 +6,9 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
+#include "spinlock.h"
+
+struct spinlock lock;
 
 int
 sys_fork(void)
@@ -50,9 +53,14 @@ sys_sbrk(void)
 
   if(argint(0, &n) < 0)
     return -1;
+  
+  acquire(&sbrkLock);
   addr = myproc()->sz;
-  if(growproc(n) < 0)
+  if(growproc(n) < 0) {
+    release(&sbrkLock);
     return -1;
+  }
+  release(&sbrkLock);
   return addr;
 }
 
@@ -105,10 +113,9 @@ int sys_clone(void)
     return -1;
   if (argptr(3, (void*)&stack, sizeof(void *)) < 0)
     return -1;
-  
   if ((uint)stack % PGSIZE != 0)
     return -1;
-
+  
   return clone(fcn, arg1, arg2, stack);
 }
 
@@ -118,25 +125,4 @@ int sys_join(void)
   if (argptr(0, (void*)&stack, sizeof(void *)) < 0)
     return -1;
   return join(stack);
-}
-
-int sys_thread_create(void)
-{
-  return 0;
-}
-int sys_thread_join(void)
-{
-  return 0;
-}
-int sys_lock_init(void)
-{
-  return 0;
-}
-int sys_lock_release(void)
-{
-  return 0;
-}
-int sys_lock_acquire(void)
-{
-  return 0;
 }

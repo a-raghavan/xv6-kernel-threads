@@ -51,6 +51,7 @@ struct proc {
   char name[16];               // Process name (debugging)
   char *ustack;                // user stack for thread
   int isThread;                // Am I a thread? 1 - yes, 0 - no
+  int threadgroupid;           // identifies all threads created in the same process
 };
 
 // Process memory is laid out contiguously, low addresses first:
